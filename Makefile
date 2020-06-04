@@ -15,7 +15,7 @@ generate:
 		--with-expand \
 		--skip-validation \
 		--skip-tag-packages \
-		--tags=On-call
+		--tags="Teams,Escalation Policies,Routing Keys"
 
 build:
 	rm -Rf bin
