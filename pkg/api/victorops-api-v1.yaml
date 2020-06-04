@@ -1,0 +1,4973 @@
+swagger: '2.0'
+info:
+  title: VictorOps API
+  description: |
+    This API allows you to interact with the VictorOps platform in various ways. Your account may be limited
+    to a total number of API calls per month. Also, some of these API calls have rate limits.
+
+    NOTE: In this documentation when creating a sample curl request (clicking the TRY IT OUT! button), in some API
+    viewing interfaces, the '@' in an email address may be encoded. Please note that the REST endpoints will not
+    process the encoded version. Make sure that the encoded character '%40' is changed to its unencoded form before
+    submitting the curl request.
+  version: "0.0.3"
+host: api.victorops.com
+schemes:
+  - https
+basePath: /
+produces:
+  - application/json
+tags:
+  - name: On-call
+  - name: Incidents
+  - name: Alerts
+  - name: Reporting
+  - name: Users
+  - name: User Contact Methods
+  - name: User Paging Policies
+  - name: Personal Paging Policy Values
+  - name: Personal Paging Policies
+  - name: Teams
+  - name: Escalation Policies
+  - name: Routing Keys
+  - name: Scheduled Overrides
+paths:
+  '/api-public/v1/user':
+    post:
+      tags:
+        - Users
+      summary: "Add a user"
+      description: |
+        __NOTE: Use of the admin parameter is deprecated.  All calls to add a user will set admin to false.
+
+        Add a user to your organization
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/addUserPayload'
+      responses:
+        '200':
+          description: Some details about the user that was added
+          schema:
+            $ref: '#/definitions/AddUserResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '422':
+          description: |
+            Username or email is unavailable, or you have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+    get:
+      tags:
+        - Users
+      summary: "List users"
+      description: |
+        Get a list of users for your organization
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: A list of users for your organization
+          schema:
+            $ref: '#/definitions/ListUserResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/user/batch':
+    post:
+      tags:
+        - Users
+      summary: "Add multiple users"
+      description: |
+        Add users to your organization
+
+        This API may be called a maximum of 15 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - in: body
+          name: users
+          schema:
+            type: array
+            items:
+              $ref: '#/parameters/addUserPayload'
+            maxItems: 50
+      responses:
+        '200':
+          description: The users were added, for errors, please see the response body
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BatchAddUserEntry'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '422':
+          description: |
+            Username or email is unavailable, or you have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/user/{user}':
+    get:
+      tags:
+        - Users
+      summary: "Retrieve information for a user"
+      description: |
+        Get the information for the specified user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user to fetch
+          # required: true
+      responses:
+        '200':
+          description: Some details about the user that was added
+          schema:
+            $ref: '#/definitions/AddUserResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '422':
+          description: |
+            Username or email is unavailable, or you have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+    put:
+      tags:
+        - Users
+      summary: "Update a user"
+      description: |
+        Update the designated user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user to be updated
+          # required: true
+        - $ref: '#/parameters/addUserPayload'
+      responses:
+        '200':
+          description: Some details about the user that was added
+          schema:
+            $ref: '#/definitions/AddUserResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '422':
+          description: |
+            Username or email is unavailable, or you have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - Users
+      summary: "Remove a user"
+      description: |
+        Remove a user from your organization. If no replacement is specified, an empty JSON payload ("{}") is still required.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user to be deleted
+          # required: true
+        - $ref: '#/parameters/deleteUserPayload'
+      responses:
+        '200':
+          description: User was deleted
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '422':
+          description: |
+            There was a problem with the delete such as a replacement is required or the replacement user was not found.
+            Details will be provided in the response body.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/user/{user}/teams':
+    get:
+      tags:
+        - Users
+      summary: "Retrieve the user's team membership"
+      description: |
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user
+          # required: true
+      responses:
+        '200':
+          description: Team details
+          schema:
+            $ref: '#/definitions/UserTeamsResponse'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/policies/types/notifications':
+    get:
+      tags:
+        - Personal Paging Policy Values
+      summary: "Get the available notification types"
+      description: |
+        Get the available notification types
+
+        description: "Send a push notification to all my devices", type: "push"
+        description: "Send an email to an email address", type: "email"
+        description: "Send an SMS to a phone number", type: "sms"
+        description: "Make a phone call to a phone number", type: "phone"
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: "All the available contact types"
+          schema:
+            type: object
+            properties:
+              notificationTypes:
+                type: array
+                items:
+                  $ref: '#/definitions/NotificationObject'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/policies/types/contacts':
+    get:
+      tags:
+        - Personal Paging Policy Values
+      summary: "Get the available contact types"
+      description: |
+        Get the available contact types
+
+        description: "Email Address", type: "email"
+        description: "Phone Number", type: "phone"
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: "All the available contact types"
+          schema:
+            type: object
+            properties:
+              contactTypes:
+                type: array
+                items:
+                  $ref: '#/definitions/ContactObject'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/policies/types/timeouts':
+    get:
+      tags:
+        - Personal Paging Policy Values
+      summary: "Get the available timeout values"
+      description: |
+        Get the available timeout values
+
+        description: "If still unacked after 1 minute", type: 1
+        description: "If still unacked after 5 minutes", type: 5
+        description: "If still unacked after 10 minutes", type: 10
+        description: "If still unacked after 15 minutes", type: 15
+        description: "If still unacked after 20 minutes", type: 20
+        description: "If still unacked after 25 minutes", type: 25
+        description: "If still unacked after 30 minutes", type: 30
+        description: "If still unacked after 45 minutes", type: 45
+        description: "If still unacked after 60 minutes", type: 60
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: All the available timeout types.
+          schema:
+            type: object
+            properties:
+              timeoutTypes:
+                type: array
+                items:
+                  $ref: '#/definitions/TimeoutObject'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/profile/{username}/policies':
+    get:
+      tags:
+        - Personal Paging Policies
+      summary: "Get the user's paging policy"
+      description: |
+        Get all the paging policy steps for the user on the org associated with the API key
+
+        This API may be called a maximum of 20 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: All steps of the user's paging policy
+          schema:
+            type: object
+            properties:
+              steps:
+                $ref: '#/definitions/UserPagingPolicy'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Personal Paging Policies
+      summary: "Create a paging policy step"
+      description: |
+        Create a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/addGroupPayload'
+      responses:
+        '200':
+          description: The created paging policy step
+          schema:
+            type: object
+            properties:
+              step:
+                $ref: '#/definitions/PagingPolicyStep'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/profile/{username}/policies/{step}':
+    get:
+      tags:
+        - Personal Paging Policies
+      summary: "Get a paging policy step"
+      description: |
+        Get a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/pagingPolicyStep'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: The paging policy step
+          schema:
+            type: object
+            properties:
+              step:
+                $ref: '#/definitions/PagingPolicyStep'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      tags:
+        - Personal Paging Policies
+      summary: "Update a paging policy step"
+      description: |
+        Update a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/pagingPolicyStep'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/addGroupPayload'
+      responses:
+        '200':
+          description: The updated paging policy step
+          schema:
+            type: object
+            properties:
+              step:
+                $ref: '#/definitions/PagingPolicyStep'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Personal Paging Policies
+      summary: "Create a rule for a paging policy step"
+      description: |
+        Create a rule for a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/pagingPolicyStep'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/addStepPayload'
+      responses:
+        '200':
+          description: The created rule for the paging policy step
+          schema:
+            type: object
+            properties:
+              stepRule:
+                $ref: '#/definitions/PagingPolicyStepRule'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/profile/{username}/policies/{step}/{rule}':
+    get:
+      tags:
+        - Personal Paging Policies
+      summary: "Get a rule from a paging policy step"
+      description: |
+        Get a rule from a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/pagingPolicyStep'
+        - $ref: '#/parameters/pagingPolicyRule'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: The rule from the paging policy step
+          schema:
+            type: object
+            properties:
+              stepRule:
+                $ref: '#/definitions/PagingPolicyStepRule'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      tags:
+        - Personal Paging Policies
+      summary: "Update a rule for a paging policy step"
+      description: |
+        Update a rule for a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/pagingPolicyStep'
+        - $ref: '#/parameters/pagingPolicyRule'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/addStepPayload'
+      responses:
+        '200':
+          description: The updated rule for the paging policy step
+          schema:
+            type: object
+            properties:
+              stepRule:
+                $ref: '#/definitions/PagingPolicyStepRule'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - Personal Paging Policies
+      summary: "Delete a rule from a paging policy step"
+      description: |
+        Delete a rule from a paging policy step
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/username'
+        - $ref: '#/parameters/pagingPolicyStep'
+        - $ref: '#/parameters/pagingPolicyRule'
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: The deleted rule from the paging policy step
+          schema:
+            type: object
+            properties:
+              stepRule:
+                $ref: '#/definitions/PagingPolicyStepRule'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+
+  '/api-public/v1/user/{user}/contact-methods':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get a list of all contact methods for a user"
+      description: |
+        Get the contact methods for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+      responses:
+        '200':
+          description: All available contact methods for the user
+          schema:
+            type: object
+            properties:
+              devices:
+                type: array
+                items:
+                  $ref: '#/definitions/ContactDevice'
+              emails:
+                type: array
+                items:
+                  $ref: '#/definitions/UserContact'
+              phones:
+                type: array
+                items:
+                  $ref: '#/definitions/UserContact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/contact-methods/devices':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get a list of all contact devices for a user"
+      description: |
+        Get the contact methods for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+      responses:
+        '200':
+          description: The list of contact devices for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ContactDevice'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/contact-methods/devices/{contactId}':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get the indicated contact device for a user"
+      description: |
+        Get the indicated contact device for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+      responses:
+        '200':
+          description: The list of contact devices for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ContactDevice'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      tags:
+        - User Contact Methods
+      summary: "Update a contact device for a user"
+      description: |
+        Update a contact device for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+        - $ref: '#/parameters/contactDeviceAdd'
+      responses:
+        '200':
+          description: The list of contact devices for the user
+          schema:
+            $ref: '#/definitions/ContactDevice'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - User Contact Methods
+      summary: "Delete a contact device for a user"
+      description: |
+        Delete a contact device for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+      responses:
+        '200':
+          description: Deleted contact device for the user
+          schema:
+            $ref: '#/definitions/ContactDevice'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/contact-methods/emails':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get a list of all contact emails for a user"
+      description: |
+        Get the contact emails for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+      responses:
+        '200':
+          description: The list of contact emails for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserContact'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - User Contact Methods
+      summary: "Create a contact emails for a user"
+      description: |
+        Create a contact email for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - $ref: '#/parameters/contactEmailAdd'
+      responses:
+        '200':
+          description: The list of contact emails for the user
+          schema:
+            $ref: '#/definitions/UserContact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/contact-methods/emails/{contactId}':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get the indicated contact email for a user"
+      description: |
+        Get the indicated contact email for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+      responses:
+        '200':
+          description: The indicated contact email for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserContact'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - User Contact Methods
+      summary: "Delete a contact email for a user"
+      description: |
+        Delete the indicated contact email for the user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+      responses:
+        '200':
+          description: Deleted contact email for the user
+          schema:
+            $ref: '#/definitions/UserContact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/contact-methods/phones':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get a list of all contact phones for a user"
+      description: |
+        Get the contact phones for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+      responses:
+        '200':
+          description: The list of contact phones for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserContact'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - User Contact Methods
+      summary: "Create a contact phones for a user"
+      description: |
+        Create a contact phone for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - $ref: '#/parameters/contactPhoneAdd'
+      responses:
+        '200':
+          description: The list of contact phones for the user
+          schema:
+            $ref: '#/definitions/UserContact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/contact-methods/phones/{contactId}':
+    get:
+      tags:
+        - User Contact Methods
+      summary: "Get the indicated contact phone for a user"
+      description: |
+        Get the indicated contact phone for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+      responses:
+        '200':
+          description: The indicated contact phone for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserContact'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - User Contact Methods
+      summary: "Delete a contact phone for a user"
+      description: |
+        Delete the indicated contact phone for the user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - name: contactId
+          in: path
+          type: string
+          description: The unique contact identifier
+          # required: true
+      responses:
+        '200':
+          description: Deleted contact phone for the user
+          schema:
+            $ref: '#/definitions/UserContact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/user/{user}/policies':
+    get:
+      tags:
+        - User Paging Policies
+      summary: "Get a list of paging policies for a user"
+      description: |
+        Get paging policies for a user
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+      responses:
+        '200':
+          description: All configured paging policies for a user
+          schema:
+            $ref: '#/definitions/Policies'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/user/{user}/oncall/schedule':
+    get:
+      deprecated: true
+      tags:
+        - On-call
+      summary: "Get a user's on-call schedule"
+      description: |
+        __NOTE: This call is deprecated. Please use `GET /api-public/v2/user/{user}/oncall/schedule`.__
+
+        Get the on-call schedule for a user for all teams, including on-call overrides.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - $ref: '#/parameters/daysFwd'
+        - $ref: '#/parameters/daysSkip'
+        - $ref: '#/parameters/step'
+      responses:
+        '200':
+          description: The on-call schedule for the user
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/OnCallAndOverrides'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v2/user/{user}/oncall/schedule':
+    get:
+      tags:
+        - On-call
+      summary: "Get a user's on-call schedule"
+      description: |
+        Get the on-call schedule for a user for all teams the user is on, including on-call overrides.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: user
+          in: path
+          type: string
+          description: The VictorOps user ID
+          # required: true
+        - $ref: '#/parameters/daysFwd'
+        - $ref: '#/parameters/daysSkip'
+        - $ref: '#/parameters/step'
+      responses:
+        '200':
+          description: The on-call schedule for the user
+          schema:
+            $ref: '#/definitions/UserSchedule'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/team/{team}/oncall/schedule':
+    get:
+      deprecated: true
+      tags:
+        - On-call
+      summary: "Get a team's on-call schedule"
+      description: |
+        __NOTE: This call is deprecated. Please use `GET /api-public/v2/team/{team}/oncall/schedule`.__
+
+        Get the on-call schedule for a team, including on-call overrides.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: "The VictorOps team 'slug'"
+          # required: true
+        - $ref: '#/parameters/daysFwd'
+        - $ref: '#/parameters/daysSkip'
+        - $ref: '#/parameters/step'
+      responses:
+        '200':
+          description: The on-call schedule for the team
+          schema:
+            $ref: '#/definitions/OnCallAndOverrides'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v2/team/{team}/oncall/schedule':
+    get:
+      tags:
+        - On-call
+      summary: "Get a team's on-call schedule"
+      description: |
+        Get the on-call schedule for a team, including on-call overrides.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: "The VictorOps team 'slug'"
+          # required: true
+        - $ref: '#/parameters/daysFwd'
+        - $ref: '#/parameters/daysSkip'
+        - $ref: '#/parameters/step'
+      responses:
+        '200':
+          description: The on-call schedule for the team
+          schema:
+            $ref: '#/definitions/TeamSchedule'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/oncall/current':
+    get:
+      tags:
+        - On-call
+      summary: "Get an organization's on-call users"
+      description: |
+        Get all on-call users/teams for your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: All users and escalation policies currently on call
+          schema:
+            type: object
+            properties:
+              teamsOnCall:
+                type: array
+                items:
+                  $ref: '#/definitions/OnCallTeamsResource'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  '/api-reporting/v1/team/{team}/oncall/log':
+    get:
+      tags:
+        - Reporting
+      summary: A list of shift changes for a team
+      description: |
+        Returns a log of user shift changes for the specified team. This is historical
+        data, and may be up to 15 minutes behind real-time log data.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: "The VictorOps team 'slug'"
+          # required: true
+        - name: start
+          description: Return shift changes occurring after this timestamp. The default is the start of the day at midnight. Specify the timestamp in ISO8601 format
+          in: query
+          type: string
+          format: date-time
+          # required: false
+        - name: end
+          description: Return shift changes occurring before this timestamp. The default is the end of the day at 11:59:59. Specify the timestamp in ISO8601 format
+          in: query
+          type: string
+          format: date-time
+          # required: false
+        - name: userName
+          description: The VictorOps user ID. Return shift changes occurring during the interval specified for this user. Without this parameter, all relevant users (with respect to the specified interval) are returned
+          in: query
+          type: string
+          # required: false
+      responses:
+        '200':
+          description: The result of the take request
+          schema:
+            $ref: '#/definitions/OnCallLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          description: Team or user(s) not found
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/team/{team}/oncall/user':
+    patch:
+      deprecated: true
+      tags:
+        - On-call
+      summary: Create an on-call override (take on-call)
+      description: |
+        __NOTE: This API call is deprecated. Please use `PATCH /api-public/v2/policies/{policy}/oncall/user`__
+
+        Replaces a currently on-call user on the team with another.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/takeRequestPayload'
+        - name: team
+          in: path
+          type: string
+          description: "The VictorOps team 'slug'"
+          # required: true
+      responses:
+        '200':
+          description: The result of the take request
+          schema:
+            $ref: '#/definitions/TakeResult'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          description: Team or user(s) not found
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/policies/{policy}/oncall/user':
+    patch:
+      tags:
+        - On-call
+      summary: Create an on-call override (take on-call)
+      description: |
+        Replaces a currently on-call user in the escalation policy with another.  In many cases, the policy slug
+        will match the slug of the team that contains it.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/takeRequestPayload'
+        - name: policy
+          in: path
+          type: string
+          description: "The VictorOps policy 'slug'"
+          # required: true
+      responses:
+        '200':
+          description: The result of the take request
+          schema:
+            $ref: '#/definitions/TakeResult'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          description: Team or user(s) not found
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents/{incidentNumber}:
+    get:
+      tags:
+        - Incidents
+      summary: Get a single incident
+      description: |
+        Get detailed data for a single incident with the provided incident number, if it exists. The incident will be returned regardless if it is active or not.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: incidentNumber
+          in: path
+          type: integer
+          description: "The Victorops incident number"
+          # required: true
+      responses:
+        '200':
+          description: |
+            A single incident matching the provided incident number
+          schema:
+            $ref: '#/definitions/IncidentInfo'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents:
+    get:
+      tags:
+        - Incidents
+      summary: Get current incident information
+      description: |
+        Get a list of the currently open, acknowledged and recently resolved incidents.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: |
+            The set of incidents.
+          schema:
+            $ref: '#/definitions/IncidentList'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Incidents
+      summary: Create a new incident
+      description: |
+        Create a new incident.
+
+        This call replicates the function of our
+        <a href="https://help.victorops.com/knowledge-base/manual-incident-creation/">manual incident creation process</a>.
+        Monitoring tools and custom integrations
+        should be configured using our
+        <a href="https://help.victorops.com/knowledge-base/victorops-restendpoint-integration/">REST Endpoint</a>.
+
+        The "isMultiResponder" option will require a response from each paged user and escalation policy before
+        paging is stopped. The option is available only to Enterprise accounts.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/createIncidentPayload'
+      responses:
+        '200':
+          description: |
+            Information about the incident created
+          schema:
+            $ref: '#/definitions/Notes'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents/ack:
+    patch:
+      tags:
+        - Incidents
+      summary: Acknowledge an incident or list of incidents
+      description: |
+        The incident(s) must be currently open.  The user supplied must be a valid VictorOps user and a member of your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/ackResolvePayload'
+      responses:
+        '200':
+          description: The result of each acknowledge incident action.
+          schema:
+            $ref: '#/definitions/AckOrResolveResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/incidents/reroute':
+    post:
+      tags:
+        - Incidents
+      summary: "Reroute one or more incidents to one or more new routable destinations."
+      description: |
+        Reroute one or more incidents to one or more users and/or escalation policies.
+
+        The "addTargets" option converts the incident to requiring a response from each paged user
+        and escalation policy before paging is stopped. The option is available only to Enterprise accounts.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/rerouteBody'
+      responses:
+        '200':
+          description: The created reroute object
+          schema:
+            $ref: '#/definitions/RerouteStatusResponse'
+  /api-public/v1/incidents/resolve:
+    patch:
+      tags:
+        - Incidents
+      summary: Resolve an incident or list of incidents
+      description: |
+        The incident(s) must be currently open.  The user supplied must be a valid VictorOps user and a member of your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/ackResolvePayload'
+      responses:
+        '200':
+          description: The result of each resolve incident action.
+          schema:
+            $ref: '#/definitions/AckOrResolveResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents/byUser/ack:
+    patch:
+      tags:
+        - Incidents
+      summary: Acknowledge all incidents for which a user was paged.
+      description: |
+        The incident(s) must be currently open.  The user supplied must be a valid VictorOps user and a member of your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/ackResolveByUserPayload'
+      responses:
+        '200':
+          description: The result of each acknowledge incident action.
+          schema:
+            $ref: '#/definitions/AckOrResolveResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents/byUser/resolve:
+    patch:
+      tags:
+        - Incidents
+      summary: Resolve all incidents for which a user was paged.
+      description: |
+        The incident(s) must be currently open.  The user supplied must be a valid VictorOps user and a member of your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/ackResolveByUserPayload'
+      responses:
+        '200':
+          description: The result of each resolve incident action.
+          schema:
+            $ref: '#/definitions/AckOrResolveResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents/{incidentNumber}/notes:
+    get:
+      tags:
+        - Incidents
+        - Notes
+      summary: Get the notes associated with an incident
+      description: |
+        Get notes any associated with a single incident with the provided incident number.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: incidentNumber
+          in: path
+          type: integer
+          description: The incident number
+          # required: true
+      responses:
+        '200':
+          description: |
+            The set of notes associated with the incidentNumber.
+          schema:
+            $ref: '#/definitions/Notes'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Incidents
+        - Notes
+      summary: Create a new Note
+      description: |
+        Create a new note.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/notesPost'
+        - name: incidentNumber
+          in: path
+          type: integer
+          description: The incident number
+          # required: true
+      responses:
+        '200':
+          description: |
+            Information about the note created
+          schema:
+            $ref: '#/definitions/Notes'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/incidents/{incidentNumber}/notes/{noteName}:
+    put:
+      tags:
+        - Incidents
+        - Notes
+      summary: Update a Note
+      description: |
+        Update a note.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/notesPost'
+        - name: incidentNumber
+          in: path
+          type: integer
+          description: The incident number
+          # required: true
+        - name: noteName
+          in: path
+          type: string
+          description: The html encoded name field of the note
+          # required: true
+      responses:
+        '200':
+          description: |
+            Information about the note updated
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - Incidents
+        - Notes
+      summary: Delete a Note
+      description: |
+        Delete a note.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: incidentNumber
+          in: path
+          type: integer
+          description: The incident number
+          # required: true
+        - name: noteName
+          in: path
+          type: string
+          description: The html encoded name field of the note
+          # required: true
+      responses:
+        '200':
+          description: |
+            Whether the note was successfully deleted
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+  /api-public/v1/alerts/{uuid}:
+    get:
+      tags:
+        - Alerts
+      summary: Retrieve alert details.
+      description: |
+        Retrieve the details of an alert that was sent VictorOps by you.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: uuid
+          in: path
+          type: string
+          description: "The VictorOps uuid of the alert"
+          # required: true
+      responses:
+        '200':
+          description: |
+            The alert, if found.
+          schema:
+            $ref: '#/definitions/GetAlertResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/user-not-found'
+        '500':
+          $ref: '#/responses/500'
+  /api-public/v1/org/routing-keys:
+    get:
+      tags:
+        - Routing Keys
+      summary: List routing keys with associated teams
+      description: Retrieves a list of routing keys and associated teams.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: The list of routing keys and associated teams
+          schema:
+            $ref: '#/definitions/ListRoutingKeysResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Routing Keys
+      summary: Create a new routing key
+      description: Creates a new routing key with escalation policy mapping.
+        The targets array is a list of escalation policy policySlugs that the new routing key will target.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/routingKeyPost'
+      responses:
+        '200':
+          description: The created routing-key
+          schema:
+            $ref: '#/definitions/CreateRoutingKeyResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/overrides':
+    get:
+      tags:
+        - Scheduled Overrides
+      summary: "List the scheduled overrides"
+      description: |
+        List all the scheduled overrides on the organization
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: A list of scheduled overrides for your organization
+
+          schema:
+            type: object
+            properties:
+              overrides:
+                type: array
+                items:
+                  $ref: '#/definitions/ScheduledOverride'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Scheduled Overrides
+      summary: "Creates a new scheduled override"
+      description: |
+        Creates a new scheduled override. Start and end dates are in ISO8601 format. E.g. `2018-09-28'T'05:00:00Z`
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/scheduledOverridePost'
+      responses:
+        '200':
+          description: The created scheduled override
+          schema:
+            type: object
+            properties:
+              schedule:
+                $ref: '#/definitions/ScheduledOverride'
+              _selfUrl:
+                type: string
+
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/overrides/{publicId}':
+    get:
+      tags:
+        - Scheduled Overrides
+      summary: "Get the specified scheduled override"
+      description: |
+        Get the specified scheduled override
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: publicId
+          in: path
+          type: string
+          description: The publicId of the scheduled override
+          # required: true
+      responses:
+        '200':
+          description: The scheduled override
+          schema:
+            type: object
+            properties:
+              override:
+                $ref: '#/definitions/ScheduledOverride'
+              _selfUrl:
+                type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+    delete:
+      tags:
+        - Scheduled Overrides
+      summary: "Deletes a scheduled override"
+      description: |
+        Deletes a scheduled override
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: publicId
+          in: path
+          type: string
+          description: The publicId of the scheduled override
+          # required: true
+      responses:
+        '200':
+          description: Whether or not the delete was successful
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/overrides/{publicId}/assignments':
+    get:
+      tags:
+        - Scheduled Overrides
+      summary: "Get the specified scheduled override"
+      description: |
+        Get the specified scheduled override assignments
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: publicId
+          in: path
+          type: string
+          description: The publicId of the scheduled override
+          # required: true
+      responses:
+        '200':
+          description: The assignments for a given scheduled override
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Assignment'
+
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/overrides/{publicId}/assignments/{policySlug}':
+    get:
+      tags:
+        - Scheduled Overrides
+      summary: "Get the specified scheduled override assignment"
+      description: |
+        Get the specified scheduled override assignments
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: publicId
+          in: path
+          type: string
+          description: The publicId of the scheduled override
+          # required: true
+        - name: policySlug
+          in: path
+          type: string
+          description: The policySlug of the assignment
+          # required: true
+      responses:
+        '200':
+          description: The assignment for the given publicId
+          schema:
+            $ref: '#/definitions/Assignment'
+
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+    put:
+      tags:
+        - Scheduled Overrides
+      summary: "Update the scheduled override assignment"
+      description: |
+        Update the scheduled override assignment
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: publicId
+          in: path
+          type: string
+          description: The publicId of the scheduled override
+          # required: true
+        - name: policySlug
+          in: path
+          type: string
+          description: The policySlug of the assignment
+          # required: true
+        - $ref: '#/parameters/updateAssignmentPut'
+      responses:
+        '200':
+          description: The assignment for the given policySlug
+          schema:
+            $ref: '#/definitions/Assignment'
+
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - Scheduled Overrides
+      summary: "Delete the scheduled override assignment"
+      description: |
+        Delete the scheduled override assignment
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: publicId
+          in: path
+          type: string
+          description: The publicId of the scheduled override
+          # required: true
+        - name: policySlug
+          in: path
+          type: string
+          description: The policySlug of the assignment
+          # required: true
+      responses:
+        '200':
+          description: The assignment that was deleted for the given scheduled override and policySlug
+          schema:
+            $ref: '#/definitions/Assignment'
+
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '422':
+          description: |
+            You have reached your user limit.
+        '500':
+          $ref: '#/responses/500'
+
+
+  /api-public/v1/teams/{team}/rotations:
+    get:
+      tags:
+        - Rotations
+      summary: Get all rotation groups for a team
+      description: Retrieves a list of all rotation groups that exist under the specified team.
+
+
+        This is the current method for retrieving uniquely identifying slugs of existing rotation groups.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The uniquely identifying team slug for which to retrieve rotation groups
+          # required: true
+      responses:
+        '200':
+          description: An object containing a list of all rotation groups that exist under the provided team
+            A rotation is one rotation and all of its shifts. This is represented in the UI as a single rotation.
+          schema:
+            $ref: '#/definitions/RotationGroupList'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+  /api-public/v1/webhooks:
+    get:
+      tags:
+        - Webhooks
+      summary: Get all of your organization's webhooks
+      description: Retrieves a list of all the webhooks existing in your organization.
+
+
+        This is the current method for retrieving uniquely identifying slugs of existing webhooks.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: An object containing a list of all webhooks existing in the organization
+            This references the webhooks created in the "Webhooks" integration.
+          schema:
+            $ref: '#/definitions/WebhookList'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+  /api-public/v1/policies:
+    get:
+      tags:
+        - Escalation Policies
+      summary: Get a list of escalation policy info
+      description: Retrieves a list of all escalation policy summaries and their associated teams that exist in your
+        organization.
+
+
+        This is the recommended way for determining to which team an escalation policy belongs.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: A list of escalation policy info objects, each of which contain a summary of an escalation policy
+            and a summary for the team associated with that escalation policy.
+          schema:
+            $ref: '#/definitions/EscalationPolicyInfoList'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Escalation Policies
+      summary: Create an escalation policy
+      description: Takes an entire escalation policy and creates it.
+
+
+        For the purpose of using this API, escalation policies are treated as immutable. The policy will not be able
+        to be updated or modified in any way via this API once created. It will only be able to be deleted. However,
+        The escalation policies are accessable in the UI once created and can be updated from there.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/escalationPolicyPost'
+      responses:
+        '200':
+          description: The newly created escalation policy
+          schema:
+            $ref: '#/definitions/EscalationPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+
+  /api-public/v1/policies/{policy}:
+    get:
+      tags:
+        - Escalation Policies
+      summary: Get a specific escalation policy
+      description: Gets a specific escalation policy based on the unique policy slug provided in the path.
+
+
+        The context for which team this policy belongs to is not available at this level. To retrieve
+        information about this escalation policy's team, you must retrieve all of the policy summaries.
+        The escalation policy summaries include links to this endpoint for each escalation policy.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: policy
+          in: path
+          type: string
+          description: The uniquely identifying escalation policy slug.
+
+
+            Thus slug is in the format `pol-[\w\d]{16}`
+          # required: true
+      responses:
+        '200':
+          description: The escalation policy matching the provided slug
+          schema:
+            $ref: '#/definitions/EscalationPolicy'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - Escalation Policies
+      summary: Delete a specified escalation policy
+      description: Deletes a specific escalaton policy based on the unique policy slug provided in the path.
+
+
+        Any routing keys which ONLY contain this policy will also be deleted.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: policy
+          in: path
+          type: string
+          description: The uniquely identifying escalation policy slug.
+
+            The policy slug is in the format `pol-[\w\d]{16}`
+          # required: true
+      responses:
+        '200':
+          description: The escalation policy was deleted
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+
+
+  /api-reporting/v2/incidents:
+    get:
+      tags:
+        - Reporting
+      summary: Get/search incident history
+      description: |
+        Retrieve incident history for your company, searching over date ranges and with filtering options.
+
+        This API may be called a maximum of once a minute.
+
+        Incident requests are paginated with a offset and limit query string parameters.
+          The query for incidents is run and offset records are skipped, after which limit records will be returned.
+
+        The default offset is 0 and the default limit is 20. The maximum value allowed for limit is 100.
+
+        Unless specified otherwise with the parameter currentPhase, the response will only contain resolved incidents.
+
+        On return, the total number of records available for that query will be returned in the payload as 'total'.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/limit'
+        - name: entityId
+          description: The entity ID involved  This is the unique identifier for the entity causing the incident.
+          in: query
+          type: string
+          # required: false
+        - name: incidentNumber
+          description: >
+            The incident number as shown in VictorOps Multiple values and ranges
+            are allowed: 4,5,20:50
+          in: query
+          type: string
+          # required: false
+        - name: startedAfter
+          description: Return incidents started after this timestamp Specify the timestamp in ISO8601 format
+          in: query
+          type: string
+          # required: false
+        - name: startedBefore
+          description: Find incidents started before this timestamp  Specify the timestamp in ISO8601 format
+          in: query
+          type: string
+          # required: false
+        - name: host
+          description: The host involved in the incident Multiple values can be separated with commas.
+          in: query
+          type: string
+          # required: false
+        - name: service
+          description: The service involved in the incident (if any) Multiple values can be separated with commas.
+          in: query
+          type: string
+          # required: false
+        - name: currentPhase
+          description: 'The current phase of the incident "resolved", "triggered" or "acknowledged". Multiple values can be separated with commas. By default, response contains only "resolved" incidents'
+          in: query
+          type: string
+          # required: false
+        - name: routingKey
+          description: 'The original routing of the incident'
+          in: query
+          type: string
+          # required: false
+      responses:
+        '200':
+          description: The list of incidents matching the request filters
+          schema:
+            $ref: '#/definitions/ReportingIncidentList'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/team':
+    post:
+      tags:
+        - Teams
+      summary: "Add a team"
+      description: |
+        Add a team to your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/addTeamPayload'
+      responses:
+        '200':
+          description: Some details about the team that was added
+          schema:
+            $ref: '#/definitions/AddTeamResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            Team name or email is unavailable, or you have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+    get:
+      tags:
+        - Teams
+      summary: "List teams"
+      description: |
+        Get a list of teams for your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: A list of teams for your organization
+          schema:
+            $ref: '#/definitions/ListTeamResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            You have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/team/{team}':
+    get:
+      tags:
+        - Teams
+      summary: "Retrieve information for a team"
+      description: |
+        Get the information for the specified team.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to fetch
+          # required: true
+      responses:
+        '200':
+          description: Some details about the team that was added
+          schema:
+            $ref: '#/definitions/AddTeamResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            Team name or email is unavailable, or you have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+    put:
+      tags:
+        - Teams
+      summary: "Update a team"
+      description: |
+        Update the designated team
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to be updated
+          # required: true
+        - $ref: '#/parameters/addTeamPayload'
+      responses:
+        '200':
+          description: Some details about the team that was added
+          schema:
+            $ref: '#/definitions/AddTeamResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            Team name or email is unavailable, or you have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      tags:
+        - Teams
+      summary: "Remove a team"
+      description: |
+        Remove a team from your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to be deleted
+          # required: true
+      responses:
+        '200':
+          description: Team was deleted
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            There was a problem with the delete such as the replacement team was not found.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/team/{team}/policies':
+    get:
+      deprecated: true
+      tags:
+        - Escalation Policies
+        - Teams
+      summary: "Retrieve a list of escalation policies for a team"
+      description: Please see the Escalation Policies section for retrieving information on escalation policies
+
+
+        Get the escalation policies for the specified team.
+
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to fetch
+          # required: true
+      responses:
+        '200':
+          description: The escalation policy list. This does not include details about the actual notification steps of the policy.
+          schema:
+            $ref: '#/definitions/EscalationPolicyInfoList'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            Team name or email is unavailable, or you have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/team/{team}/admins':
+    get:
+      tags:
+        - Teams
+      summary: "Retrieve a list of team admins for a team"
+      description: |
+        Get the team admins for the specified team.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team
+          # required: true
+      responses:
+        '200':
+          description: Some details about the team that was added
+          schema:
+            $ref: '#/definitions/TeamAdminsResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/team/{team}/members':
+    get:
+      tags:
+        - Teams
+      summary: "Retrieve a list of members for a team"
+      description: |
+        Get the members for the specified team.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to fetch
+          # required: true
+      responses:
+        '200':
+          description: Some details about the team that was added
+          schema:
+            $ref: '#/definitions/ListTeamMembersResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            Team name or email is unavailable, or you have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+    post:
+      tags:
+        - Teams
+      summary: "Add a team member"
+      description: |
+        Add a team member to your team.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to fetch
+          # required: true
+        - $ref: '#/parameters/addTeamMemberPayload'
+      responses:
+        '200':
+          description: Some details about the team that was added
+          schema:
+            $ref: '#/definitions/ListTeamMembersResponse'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            Team name or email is unavailable, or you have reached your team limit.
+        '500':
+          $ref: '#/responses/500'
+  '/api-public/v1/team/{team}/members/{user}':
+    delete:
+      tags:
+        - Teams
+      summary: "Remove a team member"
+      description: |
+        Remove a team from your organization.
+
+        This API may be called a maximum of 60 times per minute.
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - name: team
+          in: path
+          type: string
+          description: The VictorOps team to be deleted
+          # required: true
+        - name: user
+          in: path
+          type: string
+          description: The team member username
+          # required: true
+        - $ref: '#/parameters/removeTeamMemberPayload'
+      responses:
+        '200':
+          description: Team was deleted
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/team-not-found'
+        '422':
+          description: |
+            There was a problem with the delete such as the replacement team member was not found.
+        '500':
+          $ref: '#/responses/500'
+  ###########
+  ####### Maintenance Mode State
+  ###########
+  '/api-public/v1/maintenancemode':
+    get:
+      tags:
+        - Maintenance Mode
+      summary: Get an organization's current maintenance mode state
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+      responses:
+        '200':
+          description: 'maintenance mode state'
+          schema:
+            $ref: '#/definitions/MaintenanceModeState'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/maintenancemode/start':
+    post:
+      tags:
+        - Maintenance Mode
+      summary: Start maintenance mode for routing keys
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/StartMaintenanceModePayload'
+      responses:
+        '200':
+          description: 'maintenance mode state'
+          schema:
+            $ref: '#/definitions/MaintenanceModeState'
+        '403':
+          $ref: '#/responses/403'
+        '409':
+          description: 'You have an active global maintanance mode and are attempting to start a second. You may only have a single Global maintenance mode at a time'
+        '420':
+          description: 'You have reached the limit of allowed active maintenance modes'
+        '500':
+          $ref: '#/responses/500'
+
+  '/api-public/v1/maintenancemode/{maintenancemodeid}/end':
+    put:
+      tags:
+        - Maintenance Mode
+      summary: End maintenance mode for routing keys
+      parameters:
+        - $ref: '#/parameters/apiId'
+        - $ref: '#/parameters/apiKey'
+        - $ref: '#/parameters/maintenanceModeId'
+      responses:
+        '200':
+          description: 'maintenance mode state'
+          schema:
+            $ref: '#/definitions/MaintenanceModeState'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+
+
+responses:
+  '400':
+    description: Problem with the request arguments.  The response payload may include an error message.
+  '401':
+    description: Authentication parameters missing
+  '403':
+    description: Authentication failed or rate-limit reached
+  '404':
+    description: Path not found
+  '500':
+    description: Internal Server Error
+  user-not-found:
+    description: User not found
+  team-not-found:
+    description: Team not found
+parameters:
+  apiId:
+    name: X-VO-Api-Id
+    description: Your API ID
+    # required: true
+    type: string
+    in: header
+  apiKey:
+    name: X-VO-Api-Key
+    description: Your API Key
+    # required: true
+    type: string
+    in: header
+  limit:
+    name: limit
+    description: The maximum number of matching incidents to return (100 max)
+    # required: false
+    default: 20
+    maximum: 100
+    type: number
+    in: query
+  offset:
+    name: offset
+    description: The offset within the set of matching incidents
+    # required: false
+    default: 0
+    type: number
+    in: query
+  addUserPayload:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AddUserPayload'
+  addUserPayloadV2:
+    name: body
+    description: The user information
+    in: body
+    # required: true
+    schema:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - username
+        - email
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+  deleteUserPayload:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/DeleteUserPayload'
+  takeRequestPayload:
+    name: body
+    description: The take on-call payload
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/TakeRequest'
+  createIncidentPayload:
+    name: body
+    description: The incident details
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/CreateIncidentRequest'
+  ackResolvePayload:
+    name: body
+    description: Ack/Resolve payload
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AckOrResolveRequest'
+  ackResolveByUserPayload:
+    name: body
+    description: Ack/Resolve payload
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AckOrResolveByUserRequest'
+  daysFwd:
+    name: daysForward
+    description: Days to include in returned schedule (30 max)
+    # required: false
+    default: 14
+    minimum: 0
+    maximum: 30
+    type: number
+    in: query
+  daysSkip:
+    name: daysSkip
+    description: Days to skip before computing schedule to return (90 max)
+    # required: false
+    default: 0
+    minimum: 0
+    maximum: 90
+    type: number
+    in: query
+  step:
+    name: step
+    description: Step of escalation policy (3 max)
+    # required: false
+    default: 0
+    minimum: 0
+    maximum: 3
+    type: number
+    in: query
+  contactDeviceAdd:
+    name: body
+    description: The contact device
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/ContactDeviceAdd'
+  contactEmailAdd:
+    name: body
+    description: The contact email
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/ContactEmailAdd'
+  contactPhoneAdd:
+    name: body
+    description: The contact phone
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/ContactPhoneAdd'
+  incidentNumber:
+    name: incidentNumber
+    description: The incident id
+    in: query
+    type: number
+    # required: true
+  addTeamPayload:
+    name: body
+    description: The team information
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AddTeamPayload'
+  addTeamMemberPayload:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AddTeamMemberPayload'
+  removeTeamMemberPayload:
+    name: body
+    description: The user information
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/RemoveTeamMemberPayload'
+  rerouteBody:
+    name: body
+    description: The reroute rules
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/RerouteCollection'
+  orgSlug:
+    name: org
+    description: Your organization slug
+    in: path
+    type: string
+    # required: true
+  username:
+    name: username
+    description: Your username
+    in: path
+    type: string
+    # required: true
+  pagingPolicyStep:
+    name: step
+    description: Paging policy step
+    in: path
+    type: number
+    # required: true
+  pagingPolicyRule:
+    name: rule
+    description: Rule for a paging policy step
+    in: path
+    type: number
+    # required: true
+  addGroupPayload:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AddGroupPayload'
+  addStepPayload:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/AddStepPayload'
+  routingKeyPost:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/RoutingKeyPayload'
+  scheduledOverridePost:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/ScheduledOverridePayload'
+  scheduledOverridePut:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/ScheduledOverridePayloadUpdate'
+  noteName:
+    name: noteName
+    description: The name field of the stored note
+    in: path
+    # required: true
+    type: string
+  notesPost:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/NotesPayload'
+  notesPut:
+    name: body
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/NotesPayload'
+  updateAssignmentPut:
+    name: body
+    description: The policy and username we are assigning
+    in: body
+    # required: true
+    schema:
+      $ref: '#/definitions/UpdateAssignment'
+  maintenanceModeId:
+    name: maintenancemodeid
+    description: The id of the maintenance mode found in the active maintenance mode object
+    in: path
+    type: string
+    # required: true
+  StartMaintenanceModePayload:
+    name: body
+    in: body
+    # required: true
+    description: the definition of the maintenance mode you want to start
+    schema:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - 'RoutingKeys'
+        names:
+          type: array
+          items:
+            type: string
+          description: Routing keys that maintenance mode state covers. An empty list indicates global maintenance mode
+        purpose:
+          type: string
+          description: the reason for the maintenance mode
+  escalationPolicyPost:
+    name: body
+    in: body
+    description: The request body needed to create an escalation policy
+    # required: true
+    schema:
+      $ref: '#/definitions/CreateEscalationPolicy'
+
+definitions:
+  TeamScheduleOverlayResource:
+    type: object
+    properties:
+      orig:
+        type: string
+        description: The user scheduled on call (if any)
+      over:
+        type: string
+        description: The user overriding the scheduled on call user (if any)
+      start:
+        type: number
+        description: The time the override is scheduled to start
+      end:
+        type: number
+        description: The time the override is scheduled to end
+  TeamScheduleRollResource:
+    type: object
+    properties:
+      change:
+        type: number
+        description: The time the period is scheduled to start
+      until:
+        type: number
+        description: The time the period is scheduled to end
+      oncall:
+        type: string
+        description: The user scheduled on call (if any)
+      isRoll:
+        type: boolean
+    required:
+      - change
+      - until
+      - isRoll
+  TeamScheduleResource:
+    type: object
+    properties:
+      oncall:
+        type: string
+        description: The user scheduled on call (if any)
+      overrideoncall:
+        type: string
+        description: The user overriding the scheduled on call user (if any)
+      policyType:
+        type: string
+      rotationName:
+        type: string
+      shiftName:
+        type: string
+      shiftRoll:
+        type: number
+      rolls:
+        type: array
+        items:
+          $ref: '#/definitions/TeamScheduleRollResource'
+    required:
+      - policyType
+      - rolls
+  OnCallAndOverrides:
+    type: object
+    properties:
+      team:
+        type: string
+      schedule:
+        type: array
+        items:
+          $ref: '#/definitions/TeamScheduleResource'
+      overrides:
+        type: array
+        items:
+          $ref: '#/definitions/TeamScheduleOverlayResource'
+  OnCallEscalationPolicyResource:
+    type: object
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+  OnCallUsersResource:
+    type: object
+    properties:
+      onCallUser:
+        type: object
+        properties:
+          username:
+            type: string
+  OnCallTeamResource:
+    type: object
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+  OnCallNowResource:
+    type: object
+    properties:
+      escalationPolicy:
+        $ref: '#/definitions/OnCallEscalationPolicyResource'
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/OnCallUsersResource'
+  OnCallTeamsResource:
+    type: object
+    properties:
+      team:
+        $ref: '#/definitions/OnCallTeamResource'
+      onCallNow:
+        type: array
+        items:
+          $ref: '#/definitions/OnCallNowResource'
+  TakeRequest:
+    type: object
+    required:
+      - fromUser
+      - toUser
+    properties:
+      fromUser:
+        type: string
+      toUser:
+        type: string
+  TakeResult:
+    type: object
+    properties:
+      result:
+        type: string
+  AckOrResolveRequest:
+    type: object
+    required:
+      - userName
+      - incidentNames
+    properties:
+      userName:
+        type: string
+      incidentNames:
+        type: array
+        items:
+          type: string
+      message:
+        type: string
+  CreateIncidentRequest:
+    type: object
+    required:
+      - summary
+      - details
+      - userName
+      - targets
+    properties:
+      summary:
+        type: string
+      details:
+        type: string
+      userName:
+        type: string
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/IncidentTarget'
+      isMultiResponder:
+        type: boolean
+  AckOrResolveByUserRequest:
+    type: object
+    required:
+      - userName
+    properties:
+      userName:
+        type: string
+      message:
+        type: string
+  AckOrResolveResponse:
+    type: object
+    description: The results of ack/resolve for each incident
+    properties:
+      results:
+        type: array
+        items:
+          $ref: '#/definitions/AckOrResolveResult'
+  AckOrResolveResult:
+    type: object
+    description: The results of ack/resolve for a individual incident
+    properties:
+      incidentNumber:
+        type: string
+      entityId:
+        type: string
+      cmdAccepted:
+        type: boolean
+      message:
+        type: string
+  ReportingIncidentList:
+    type: object
+    description: The list of incidents in various states
+    properties:
+      offset:
+        type: integer
+        description: The pagination offset
+      limit:
+        type: integer
+        description: The maximum number of incidents to fetch
+      total:
+        type: integer
+        description: The total incidents matching the supplied parameters
+      incidents:
+        type: array
+        description: The list of incidents matching the supplied parameters, up to the provided limit.
+        items:
+          $ref: '#/definitions/ReportingIncidentInfo'
+  ReportingIncidentInfo:
+    type: object
+    description: Incidents contain the following fields (all should be considered optional)
+    properties:
+      alertCount:
+        type: number
+        description: The number of alerts received for this incident
+      currentPhase:
+        type: string
+        description: 'The current phase of the incident can be resolved, triggered (UNACKED) or acknowledged (ACKED).'
+        enum: [RESOLVED, UNACKED, ACKED]
+      entityDisplayName:
+        type: string
+        description: The display name of the incident. This is the "Incident Description" field when manually creating an incident.
+      entityId:
+        type: string
+        description: The unique identification of the entity being monitored that caused the incident
+      entityState:
+        type: string
+        description: The entity's state
+      entityType:
+        type: string
+        description: The type of the entity
+      host:
+        type: string
+        description: The host on which the incident occurred
+      incidentNumber:
+        type: string
+        description: The VictorOps incident number
+      lastAlertId:
+        type: string
+        description: The UUID of the last alert for the incident
+      lastAlertTime:
+        type: string
+        description: The time of the last alert received for the incident
+
+
+          The format of the last alert time is in `yyyy-MM-dd'T'HH:mm:ssZ`
+      routingKey:
+        type: string
+        description: The original routing of the incident
+
+
+          Routing keys tie the alerts from your monitoring tools to the specific team (or escalation policy) in VictorOps
+      service:
+        type: string
+        description: The service name causing the incident (if any)
+      startTime:
+        type: string
+        description: The time the incident started
+
+
+          The format of the start time is in `yyyy-MM-dd'T'HH:mm:ssZ`
+      pagedTeams:
+        type: array
+        description: The teams that were paged for the incident
+
+
+          This is a list of the team slugs of the teams that were paged.
+
+
+          The team slug is in the format `team-[\w\d]{16}`
+        items:
+          type: string
+      pagedUsers:
+        type: array
+        description: A list of the Victorops usernames of the users that were paged for the incident.
+        items:
+          type: string
+      pagedPolicies:
+        type: array
+        description: The escalation policy summaries that were triggered for the incident
+        items:
+          $ref: '#/definitions/EscalationPolicyInfo'
+      transitions:
+        type: array
+        description: Transitions of the incident state over time
+        items:
+          $ref: '#/definitions/IncidentTransition'
+
+  IncidentList:
+    type: object
+    description: The list of incidents in various states
+    properties:
+      incidents:
+        type: array
+        description: The incident data
+        items:
+          $ref: '#/definitions/IncidentInfo'
+  IncidentInfo:
+    type: object
+    description: Incidents contain the following fields (all should be considered optional)
+    properties:
+      incidentNumber:
+        type: string
+        description: The VictorOps incident number
+      startTime:
+        type: string
+        description: The time the incident started
+
+
+          The format of the start time is in `yyyy-MM-dd'T'HH:mm:ssZ`.
+      currentPhase:
+        type: string
+        description: 'The current phase of the incident can be resolved, triggered (UNACKED) or acknowledged (ACKED).'
+        enum: [RESOLVED, UNACKED, ACKED]
+      alertCount:
+        type: number
+        description: The number of alerts received for this incident
+      lastAlertTime:
+        type: string
+        description: The time of the last alert received for the incident
+
+
+          The format of the last alert time is in `yyyy-MM-dd'T'HH:mm:ssZ`.
+      lastAlertId:
+        type: string
+        description: The UUID of the last alert for the incident
+      entityId:
+        type: string
+        description: The unique identification of the entity being monitored that caused the incident
+      host:
+        type: string
+        description: The host on which the incident occurred
+      service:
+        type: string
+        description: The service name causing the incident (if any)
+      pagedUsers:
+        type: array
+        description: A list of the Victorops usernames of the users that were paged for the incident.
+        items:
+          type: string
+      pagedTeams:
+        type: array
+        description: The teams that were paged for the incident
+
+
+          This is a list of the team slugs of the teams that were paged.
+
+
+          The team slug is in the format `team-[\w\d]{16}`
+        items:
+          type: string
+      pagedPolicies:
+        type: array
+        description: The escalation policy summaries that were triggered for the incident
+        items:
+          $ref: '#/definitions/EscalationPolicyInfo'
+      transitions:
+        type: array
+        description: Transitions of the incident state over time
+        items:
+          $ref: '#/definitions/IncidentTransition'
+      firstAlertUuid:
+        type: string
+        description: The UUID of the first alert for this incident.
+
+
+          You can use this id to call the get alert endpoint in the Alerts section (`/api-public/v1/alerts/{uuid}`) to
+          get more information about the alert that started this incident.
+          
+
+          The state message field for the first alert will have the original, more detailed description of the incident. 
+      monitorName:
+        type: string
+        description:
+          This is the name of the creator of this incident. If this incident was manually triggered, this is the username of the user that triggered it. If this incident was not manually triggered, this is the name of the service that triggered it.
+
+
+          The format for manual creation is `vouser-{username}`.
+
+
+          The format for a system creating an incident is `{service-name}`.
+      monitorType:
+        type: string
+        description: The type of the monitor of the incident, as named in the monitorName, that triggered the incident. Either manual (if a user created the incident) or the name of the service that triggered the incident
+        enum: [UNKNOWN, PINGDOM, NAGIOS, HEALTHCHECKER, API, Cloudwatch, NewRelic, Zabbix, Email, Splunk, ServiceNow, Manual, etc]
+  IncidentTransition:
+    type: object
+    description: A transition of incident state
+    properties:
+      name:
+        type: string
+        description: The transition name
+      at:
+        type: string
+        description: The time of the transition
+      by:
+        type: string
+        description: The user that caused the transition (if any)
+      message:
+        type: string
+        description: The message entered by that user (if any)
+      manually:
+        type: boolean
+        description: If the incident transition was caused by a person
+      alertId:
+        type: string
+        description: The unique alert ID that caused the transition
+      alertUrl:
+        type: string
+        description: A URL to retrieve the details of the alert that caused the transition
+  AckUser:
+    type: object
+    description: A JSON object with first/last name and email of the user that acknowledged the incident.
+    properties:
+      email:
+        type: string
+      first:
+        type: string
+      last:
+        type: string
+  GetAlertResponse:
+    type: object
+    description: Alert details. All fields should be considered optional.
+    properties:
+      messageType:
+        type: string
+        description: |
+          The type of alert; INFO, WARNING, ACKNOWLEDGEMENT, CRITICAL, RECOVERY
+      entityId:
+        type: string
+        description: |
+          Identifies the entity (host, service, etc.) this alert was about.
+      timestamp:
+        type: number
+        description: Timestamp of the alert in seconds since epoch.
+      stateStartTime:
+        type: number
+        description: The time this entity entered its current state (seconds since epoch).
+      stateMessage:
+        type: string
+        description: Any additional status information from the alert item.
+      monitoringTool:
+        type: string
+        description: The name of the monitoring system software (eg. nagios, icinga, sensu, etc.)
+      entityDisplayName:
+        type: string
+        description: Used within VictorOps to display a human-readable name for the entity.
+      ackMsg:
+        type: string
+        description: A user entered comment for the acknowledgment.
+      ackAuthor:
+        type: string
+        description: The user that acknowledged the incident.
+      raw:
+        type: string
+        description: |
+          The full, raw alert details JSON string (i.e. parse the string into a JSON object)
+  ListUserResponse:
+    type: object
+    description: Some info about the user
+    properties:
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/V1User'
+      _selfUrl:
+        type: string
+  AddUserResponse:
+    $ref: '#/definitions/V1User'
+  OnCallLog:
+    type: object
+    properties:
+      teamSlug:
+        type: string
+      start:
+        type: string
+        format: date-time
+      end:
+        type: string
+        format: date-time
+      userLogs:
+        type: array
+        items:
+          $ref: '#/definitions/UserLog'
+  ScheduledOverride:
+    type: object
+    properties:
+      publicId:
+        type: string
+      user:
+        $ref: '#/definitions/ScheduledUser'
+      timezone:
+        type: string
+      start:
+        type: string
+        description: The override start time (ISO 8601).
+      end:
+        type: string
+        description: The override end time (ISO 8601)
+      assignments:
+        type: array
+        items:
+          $ref: '#/definitions/Assignment'
+  Assignment:
+    type: object
+    properties:
+      _selfUrl:
+        type: string
+      team:
+        type: string
+      policy:
+        type: string
+      assigned:
+        type: boolean
+      user:
+        type: string
+
+  UpdateAssignment:
+    type: object
+    required:
+      - policy
+    properties:
+      policy:
+        description: The policy slug
+        type: string
+      username:
+        description: The username being assinged
+        type: string
+
+  RoutingKeyPayload:
+    type: object
+    properties:
+      routingKey:
+        type: string
+      targets:
+        type: array
+        items:
+          type: string
+          description: Array of policySlugs that the new routing key will target
+
+  ScheduledUser:
+    type: object
+    properties:
+      username:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+  ScheduledOverridePayload:
+    type: object
+    properties:
+      username:
+        type: string
+      timezone:
+        type: string
+      start:
+        type: string
+        description: The override start time (ISO 8601)
+      end:
+        type: string
+        description: The override end time (ISO 8601)
+  ScheduledOverridePayloadUpdate:
+    type: object
+    properties:
+      username:
+        type: string
+      policySlug:
+        type: string
+      start:
+        type: string
+        description: The override start time (ISO 8601)
+      end:
+        type: string
+        description: The override end time (ISO 8601)
+  NotesPayload:
+    type: object
+    properties:
+      name:
+        type: string
+      display_name:
+        type: string
+      json_value:
+        type: object
+        description: The note body
+  UserLog:
+    type: object
+    properties:
+      userId:
+        type: string
+      total:
+        type: object
+        properties:
+          hours:
+            type: number
+          minutes:
+            type: number
+      adjustedTotal:
+        type: object
+        properties:
+          hours:
+            type: number
+          minutes:
+            type: number
+      log:
+        type: array
+        items:
+          $ref: '#/definitions/OnCallInterval'
+  OnCallInterval:
+    type: object
+    properties:
+      "on":
+        type: string
+      "off":
+        type: string
+      duration:
+        type: object
+        properties:
+          hours:
+            type: number
+          minutes:
+            type: number
+      escalationPolicy:
+        $ref: '#/definitions/EscalationPolicySummary'
+  V1User:
+    type: object
+    description: Some info about the user
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+      createdAt:
+        type: string
+      passwordLastUpdated:
+        type: string
+      verified:
+        type: boolean
+        description: Whether or not this user has set their password (will always be false)
+      _selfUrl:
+        type: string
+  BatchUserError:
+    type: object
+    description: a single error for an attept to create a user in batch
+    properties:
+      code:
+        type: string
+        description: general class of error
+      message:
+        type: string
+        description: specifics about the error
+  BatchAddUserEntry:
+    type: object
+    description: A report on success/failure of a single user in a batch user create request
+    properties:
+      username:
+        type: string
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/BatchUserError'
+  IncidentTarget:
+    type: object
+    required:
+      - type
+      - slug
+    properties:
+      type:
+        type: string
+        description: Type of target
+        enum:
+          - User
+          - EscalationPolicy
+      slug:
+        type: string
+        description: User name or escalation policy slug
+  CreatedIncident:
+    type: object
+    properties:
+      incidentNumber:
+        type: string
+        description: The VictorOps incident number
+      error:
+        type: string
+        description: An error message
+  ContactDevice:
+    type: object
+    properties:
+      deviceType:
+        type: string
+      label:
+        type: string
+      extId:
+        type: string
+      _selfUrl:
+        type: string
+  ContactDeviceAdd:
+    type: object
+    description: The contact device
+    properties:
+      device_label:
+        type: string
+      escalation_notification_sound:
+        type: string
+      chat_escalation_sound:
+        type: string
+      resolved_notification_sound:
+        type: string
+  UserContact:
+    type: object
+    properties:
+      deviceType:
+        type: string
+      label:
+        type: string
+      extId:
+        type: string
+      _selfUrl:
+        type: string
+
+  TeamDetail:
+    type: object
+    description: Some info about the team
+    properties:
+      _selfUrl:
+        type: string
+      _membersUrl:
+        type: string
+      _policiesUrl:
+        type: string
+      _adminsUrl:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+      memberCount:
+        type: number
+      version:
+        type: number
+      isDefaultTeam:
+        type: boolean
+
+  UserTeamsResponse:
+    type: object
+    description: A list of teams to which the user belongs
+    properties:
+      teams:
+        type: array
+        items:
+          $ref: '#/definitions/SimpleTeamDetail'
+
+  SimpleTeamDetail:
+    type: object
+    description: Some info about the team
+    properties:
+      name:
+        type: string
+      slug:
+        type: string
+      _selfUrl:
+        type: string
+      _membersUrl:
+        type: string
+      _policiesUrl:
+        type: string
+      _adminsUrl:
+        type: string
+
+  ListTeamResponse:
+    type: array
+    items:
+      $ref: '#/definitions/TeamDetail'
+
+  AddTeamResponse:
+    $ref: '#/definitions/TeamDetail'
+
+  ListTeamMembersResponse:
+    type: object
+    description: A list of members for the team
+    properties:
+      _selfUrl:
+        type: string
+      _teamUrl:
+        type: string
+      members:
+        type: array
+        items:
+          $ref: '#/definitions/TeamMember'
+
+  TeamMember:
+    type: object
+    description: Some info about the user
+    properties:
+      username:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      version:
+        type: number
+      verified:
+        type: string
+        description: Whether or not this user has set their password (will always be false)
+
+  TeamAdminsResponse:
+    type: object
+    description: A list of team admins for the team
+    properties:
+      teamAdmins:
+        type: array
+        items:
+          $ref: '#/definitions/TeamAdmin'
+
+  TeamAdmin:
+    type: object
+    description: Some info about the user
+    properties:
+      username:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      _selfUrl:
+        type: string
+
+  AddUserPayload:
+    type: object
+    description: The user information
+    required:
+      - firstName
+      - lastName
+      - username
+      - email
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      username:
+        type: string
+      email:
+        type: string
+        format: email
+      admin:
+        type: boolean
+      expirationHours:
+        type: number
+        description: The validity duration for the invitatation/set password link sent to the added user.
+        default: 24
+  DeleteUserPayload:
+    type: object
+    description: The information about what to do with the deleted user
+    properties:
+      replacement:
+        type: string
+        description: The user to take the place of the deleted user in escalations
+      replacementStrategy:
+        type: string
+        enum: [specifiedUser, globalAdmin, teamAdmin]
+        description: >
+          The strategy you would like to use to replace the user. They work as follows
+          specifiedUser - replace the deleted user with a specific user. If using
+                         this strategy, you MUST provide the `replacement` field
+                         as well. This is also the default strategy. So, if you
+                         provide no replacementStrategy in your request, you are
+                         still required to provide a `replacement` field.
+          globalAdmin - replace the deleted user with the first Global Admin for the
+                        organization.
+          teamAdmin - replace the deleted user in rotations/escalation policies with
+                      the team admin for the team related to that rotation or escalation
+                      policy. This strategy REQUIRES that every team have an admin that
+                      is not the deleted user.
+
+  AddTeamMemberPayload:
+    type: object
+    description: The user information
+    required:
+      - username
+    properties:
+      username:
+        type: string
+  ContactEmailAdd:
+    type: object
+    description: The contact email
+    required:
+      - label
+      - email
+    properties:
+      label:
+        type: string
+      email:
+        type: string
+        format: email
+      rank:
+        type: integer
+  ContactPhoneAdd:
+    type: object
+    description: The contact phone
+    required:
+      - label
+      - phone
+    properties:
+      label:
+        type: string
+      phone:
+        type: string
+      rank:
+        type: integer
+  AddTeamPayload:
+    type: object
+    description: The team information
+    required:
+      - name
+    properties:
+      name:
+        type: string
+  RemoveTeamMemberPayload:
+    type: object
+    description: The user information
+    required:
+      - replacement
+    properties:
+      replacement:
+        type: string
+  ListRoutingKeysResponse:
+    type: object
+    description: Info about routing keys in the org
+    properties:
+      routingKeys:
+        type: array
+        items:
+          $ref: '#/definitions/RoutingKeyInfo'
+      _selfUrl:
+        type: string
+  CreateRoutingKeyResponse:
+    type: object
+    description: Info about the newly created routing key
+    properties:
+      routingKey:
+        type: string
+      targets:
+        type: array
+        items:
+          type: string
+          description: Array of policySlugs that the new routing key targets
+  RoutingKeyInfo:
+    type: object
+    description: Routing keys contain the following fields
+    properties:
+      routingKey:
+        type: string
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/RoutingKeyTarget'
+      isDefault:
+        type: boolean
+  RoutingKeyTarget:
+    type: object
+    description: Routing key target
+    properties:
+      policyName:
+        type: string
+      policySlug:
+        type: string
+      _teamUrl:
+        type: string
+  Policies:
+    type: object
+    description: Paging policies accociated which this user
+    properties:
+      username:
+        type: string
+      userId:
+        type: integer
+      policies:
+        type: array
+        items:
+          $ref: '#/definitions/PagingPolicy'
+  PagingPolicy:
+    type: object
+    description: Paging policy fields
+    properties:
+      order:
+        type: integer
+      timeout:
+        type: integer
+      contactType:
+        type: string
+      extId:
+        type: string
+
+  User:
+    type: object
+    properties:
+      username:
+        type: string
+
+  Team:
+    type: object
+    required:
+      - name
+      - slug
+    properties:
+      name:
+        type: string
+        description: The team name
+      slug:
+        type: string
+        description: The unique identifier for this team.
+
+
+          The slug is in the format `team-[\w\d]{16}`
+
+  OnCallType:
+    type: string
+    enum:
+      - user
+      - rotation_group
+      - rotation_group_next
+      - rotation_group_previous
+      - team
+      - team_routing
+      - webhook
+      - email
+      - policy_routing
+
+  OnCallRoll:
+    type: object
+    properties:
+      start:
+        type: string
+        description: The on-call period start time (ISO 8601)
+      end:
+        type: string
+        description: The on-call period end time (ISO 8601)
+      onCallUser:
+        $ref: '#/definitions/User'
+      isRoll:
+        type: boolean
+    required:
+      - start
+      - end
+      - isRoll
+
+  OnCallOverride:
+    type: object
+    properties:
+      origOnCallUser:
+        $ref: '#/definitions/User'
+      overrideOnCallUser:
+        $ref: '#/definitions/User'
+      start:
+        type: string
+        description: The override start time (ISO 8601)
+      end:
+        type: string
+        description: The override end time (ISO 8601)
+
+  OnCallEntry:
+    type: object
+    properties:
+      onCallUser:
+        $ref: '#/definitions/User'
+      overrideOnCallUser:
+        $ref: '#/definitions/User'
+      onCallType:
+        $ref: '#/definitions/OnCallType'
+      rotationName:
+        type: string
+      shiftName:
+        type: string
+      shiftRoll:
+        type: string
+        description: The shift roll time (ISO 8601)
+      rolls:
+        type: array
+        items:
+          $ref: '#/definitions/OnCallRoll'
+    required:
+      - onCallType
+      - rolls
+
+  PolicySchedule:
+    type: object
+    properties:
+      policy:
+        $ref: '#/definitions/EscalationPolicySummary'
+      schedule:
+        type: array
+        items:
+          $ref: '#/definitions/OnCallEntry'
+      overrides:
+        type: array
+        items:
+          $ref: '#/definitions/OnCallOverride'
+
+  TeamSchedule:
+    type: object
+    properties:
+      team:
+        $ref: '#/definitions/Team'
+      schedules:
+        type: array
+        items:
+          $ref: '#/definitions/PolicySchedule'
+
+  UserSchedule:
+    type: object
+    properties:
+      teamSchedules:
+        type: array
+        items:
+          $ref: '#/definitions/TeamSchedule'
+
+  RotationGroup:
+    type: object
+    required:
+      - teamSlug
+      - slug
+      - label
+    properties:
+      teamSlug:
+        type: string
+        description: The team associated with this rotation group
+
+
+          The team slug is in the format `team-[\w\d]{16}`
+      slug:
+        type: string
+        description: A unique identifier for this rotation group
+
+
+          The slug is in the format `rtg-[\w\d]{16}`
+      label:
+        type: string
+        description: The name of this rotation group
+
+  RotationGroupList:
+    type: object
+    required:
+      - rotationGroups
+    properties:
+      rotationGroups:
+        type: array
+        items:
+          $ref: '#/definitions/RotationGroup'
+
+  Webhook:
+    type: object
+    required:
+      - slug
+      - label
+      - url
+    properties:
+      slug:
+        type: string
+        description: A unique identifier for this webhook
+
+
+          The slug is in the format `wh-[\w\d]{16}`
+      label:
+        type: string
+        description: The name of this webhook
+      url:
+        type: string
+        description: The webhook's configured URL
+
+  WebhookList:
+    type: object
+    required:
+      - webhooks
+    properties:
+      webhooks:
+        type: array
+        items:
+          $ref: '#/definitions/Webhook'
+
+  CreateEscalationPolicyEntry:
+    type: object
+    required:
+      - executionType
+    properties:
+      executionType:
+        type: string
+        enum: [rotation_group, rotation_group_next, rotation_group_previous, webhook, user, email, policy_routing]
+        description: This is an entry containing only ONE of the available execution types.
+
+
+          If the executionType provided is one of [rotation_group, rotation_group_next, rotation_group_previous]
+          then you must (and only) provide the rotation group object in the body.
+
+
+          If the executionType provided is [webhook] then you must (and only) provide the webhook object in the body.
+
+
+          If the executionType provided is [user] then you must (and only) provide the user object in the body.
+
+
+          If the executionType provided is [email] then you must (and only) provide the email object in the body.
+
+
+          If the executionType provided is [policy_routing] then you must (and only) provide the target policy object in the body.
+      rotationGroup:
+        type: object
+        title: rotationGroup
+        properties:
+          slug:
+            type: string
+            description: The unique identifier for the rotation group that will be executed when this escalation policy step activates.
+
+
+              The slug is in the format `rtg-[\w\d]{16}`
+
+
+              The rotation group must already exist and can currently only be created in the web application.
+              In the Rotations section, the `/api-public/v1/teams/{team}/rotations` endpoint will return a list of the
+              available rotations. The rotation must exist for the same team used in this escalation policy.
+      webhook:
+        type: object
+        title: wehook
+        properties:
+          slug:
+            type: string
+            description: The unique identifier for the webhook that will be executed when this escalation policy step activates
+
+
+              The slug is in the format `wh-[\w\d]{16}`
+
+
+              The webhook must already exist and can currently only be created in the web application.
+              In the Webhooks section, the `/api-public/v1/webhooks` endpoint will return a list of your organization's webhooks.
+      user:
+        type: object
+        title: user
+        properties:
+          username:
+            type: string
+            description: The unique identifier for the user. This user will be notified when the escalation policy step activates.
+      email:
+        type: object
+        title: email
+        properties:
+          address:
+            type: string
+            description: The email address that will be notified when this escalation policy step activates.
+
+
+              Any email adress may be provided here.
+      targetPolicy:
+        type: object
+        title: targetPolicy
+        description: The escalation policy to target when executing
+        properties:
+          policySlug:
+            type: string
+            description: The unique slug of another escalation policy that will be executed when this escalation policy step activates.
+
+
+              The policy slug is simply a reference to another escalation policy that already currently exists.
+              The slug is in the format `pol-[\w\d]{16}`
+
+  CreateEscalationPolicyGroup:
+    type: object
+    required:
+      - timeout
+      - entries
+    properties:
+      timeout:
+        type: integer
+        description: The duration in minutes to wait until executing this step since the last step was executed.
+
+
+          This value may be 0. This implies that this policy step should immediately execute.
+      entries:
+        type: array
+        description: A list of entries that this escalation policy group encapsulates
+        items:
+          $ref: '#/definitions/CreateEscalationPolicyEntry'
+
+  CreateEscalationPolicy:
+    type: object
+    required:
+      - name
+      - teamSlug
+      - steps
+    properties:
+      name:
+        type: string
+        description: The name of the escalation policy
+      teamSlug:
+        type: string
+        description: The unique identifier for the team to create the policy under.
+
+
+          The team slug is in the format `team-[\w\d]{16}`
+      ignoreCustomPagingPolicies:
+        type: boolean
+        default: false
+        description: True if this policy ignores a user's custom paging policy; this will page the
+          on-call user via their Primary Paging Policy and ignore any custom paging policies they have set.
+          We recommend enabling this if the escalation policy handles high severity incidents.
+      steps:
+        type: array
+        items:
+          $ref: '#/definitions/CreateEscalationPolicyGroup'
+        description: A list of groupings of entries. Each group is a "step" in the escalation policy.
+
+  EscalationPolicyEntry:
+    type: object
+    description: This is an entry containing only ONE of the available execution types.
+
+
+      If the executionType provided is one of [rotation_group, rotation_group_next, rotation_group_previous]
+      then only the rotation group object will be provided in the body.
+
+
+      If the executionType provided is [webhook] then only the webhook object will be provided in the body.
+
+
+      If the executionType provided is [user] then only the user object will be provided in the body.
+
+
+      If the executionType provided is [email] the nonly the email object object will be provided in the body.
+
+
+      If the executionType provided is [policy_routing] then only the target policy object will be provided in the body.
+    required:
+      - executionType
+    properties:
+      executionType:
+        type: string
+        enum: [rotation_group, rotation_group_next, rotation_group_previous, webhook, user, email, policy_routing]
+        description: The type of entry
+      rotationGroup:
+        type: object
+        title: rotationGroup
+        properties:
+          slug:
+            type: string
+            description: The unique identifier for the rotation group that will be executed when this escalation policy step activates.
+
+
+              The slug is in the format `rtg-[\w\d]{16}`
+
+
+              To get more information about this rotation group, you can use the endpoints available in the Rotation Groups section
+          label:
+            type: string
+            description: The name of the rotation group
+      webhook:
+        type: object
+        title: webhook
+        properties:
+          slug:
+            type: string
+            description: The unique identifier for the webhook that will be executed when this escalation policy step activates
+
+
+              The slug is in the format `wh-[\w\d]{16}`
+
+
+              To get more information about this webhook, you can use the endpoints available in the Webhooks section
+          label:
+            type: string
+            description: The name of the webhook
+      user:
+        type: object
+        title: user
+        properties:
+          username:
+            type: string
+            description: The unique identifier for the user. This user will be notified when the escalation policy step activates.
+          firstName:
+            type: string
+            description: The user's first name
+          lastName:
+            type: string
+            description: The user's last name
+      email:
+        type: object
+        title: email
+        properties:
+          address:
+            type: string
+            description: The email address that will be notified when this escalation policy step activates.
+      targetPolicy:
+        type: object
+        title: targetPolicy
+        description: The escalation policy to target when executing
+        properties:
+          policySlug:
+            type: string
+            description: The unique slug of another escalation policy that will be executed when this escalation policy step activates.
+
+
+              The policy slug is in the format `pol-[\w\d]{16}`
+
+  EscalationPolicyGroup:
+    type: object
+    required:
+      - timeout
+      - entries
+    properties:
+      timeout:
+        type: integer
+        description: The duration in minutes to wait until executing this step since the last step was executed.
+
+
+          This value may be 0. This implies that this policy step should immediately execute.
+      entries:
+        type: array
+        description: A list of entries that this escalation policy group encapsulates. These entries will all be executed
+          once the escalation policy reaches this step.
+        items:
+          $ref: '#/definitions/EscalationPolicyEntry'
+
+  EscalationPolicy:
+    type: object
+    required:
+      - name
+      - slug
+      - ignoreCustomPagingPolicies
+      - steps
+    properties:
+      name:
+        type: string
+        description: The name of this escalation policy
+      slug:
+        type: string
+        description: A unique identifier for this escalation polcy
+
+
+          This slug is in the format `pol-[\w\d]{16}`
+      ignoreCustomPagingPolicies:
+        type: boolean
+        description: True if this policy ignores a user's custom paging policy; this will page the
+          on-call user via their Primary Paging Policy and ignore any custom paging policies they have set.
+          We recommend enabling this if the escalation policy handles high severity incidents.
+      steps:
+        type: array
+        items:
+          $ref: '#/definitions/EscalationPolicyGroup'
+        description: A list of groupings of entries. Each group is a "step" in the escalation policy. Each "step" contains
+          a group of entries to be executed.
+
+  EscalationPolicySummary:
+    type: object
+    description: A summary containing minimal, high-level information about an escalation policy.
+    required:
+      - name
+      - slug
+      - _selfUrl
+    properties:
+      name:
+        type: string
+        description: The name of this escalation policy
+      slug:
+        type: string
+        description: A unique identifier for this escalation policy.
+
+
+          The slug is in the format `pol-[\w\d]{16}`
+      _selfUrl:
+        type: string
+        description: This is a URI that is generated for this escalation policy. It points to the entire escalation
+          policy resource. and can be used to get detailed information about this escalation policy instead of just the summary.
+
+  EscalationPolicyInfo:
+    type: object
+    required:
+      - policy
+      - team
+    properties:
+      policy:
+        $ref: '#/definitions/EscalationPolicySummary'
+      team:
+        $ref: '#/definitions/Team'
+
+  EscalationPolicyInfoList:
+    type: object
+    required:
+      - policies
+    properties:
+      policies:
+        type: array
+        description: A list of escalation policy info objects
+        items:
+          $ref: '#/definitions/EscalationPolicyInfo'
+
+  RerouteCollection:
+    type: object
+    required:
+      - userName
+      - reroutes
+    properties:
+      userName:
+        type: string
+      reroutes:
+        type: array
+        items:
+          $ref: '#/definitions/Reroute'
+
+  Reroute:
+    type: object
+    required:
+      - incidentNumber
+      - targets
+    properties:
+      incidentNumber:
+        type: string
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/IncidentTarget'
+      addTargets:
+        type: boolean
+
+  RerouteStatusResponse:
+    type: object
+    properties:
+      statuses:
+        type: array
+        items:
+          $ref: '#/definitions/RerouteStatus'
+
+  RerouteStatus:
+    type: object
+    required:
+      - incidentNumber
+      - success
+      - targetStatus
+    properties:
+      incidentNumber:
+        type: string
+      success:
+        type: boolean
+      targetStatus:
+        type: array
+        items:
+          $ref: '#/definitions/RerouteTargetStatus'
+      message:
+        type: string
+
+  RerouteTargetStatus:
+    type: object
+    required:
+      - slug
+      - success
+    properties:
+      slug:
+        type: string
+        description: User name or escalation policy slug
+      success:
+        type: boolean
+      message:
+        type: string
+
+  Contact:
+    type: object
+    properties:
+      id:
+        type: number
+      type:
+        $ref: '#/definitions/ContactType'
+
+  PagingPolicyStepRule:
+    type: object
+    properties:
+      index:
+        type: number
+      type:
+        $ref: '#/definitions/NotificationType'
+      contact:
+        $ref: '#/definitions/Contact'
+
+  PagingPolicyStepRuleAdd:
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/NotificationType'
+      contact:
+        $ref: '#/definitions/Contact'
+
+  PagingPolicyStep:
+    type: object
+    properties:
+      index:
+        type: number
+      timeout:
+        $ref: '#/definitions/TimeoutType'
+      rules:
+        type: array
+        items:
+          $ref: '#/definitions/PagingPolicyStepRule'
+
+  UserPagingPolicy:
+    type: array
+    items:
+      $ref: '#/definitions/PagingPolicyStep'
+
+  AddGroupPayload:
+    type: object
+    properties:
+      timeout:
+        $ref: '#/definitions/TimeoutType'
+      rules:
+        type: array
+        items:
+          $ref: '#/definitions/PagingPolicyStepRuleAdd'
+
+  AddStepPayload:
+    type: object
+    properties:
+      contact:
+        $ref: '#/definitions/Contact'
+      type:
+        $ref: '#/definitions/NotificationType'
+
+  ContactType:
+    type: string
+    enum:
+      - email
+      - phone
+
+  ContactDescription:
+    type: string
+    enum:
+      - Email Address
+      - Phone Number
+
+  ContactObject:
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/ContactType'
+      description:
+        $ref: '#/definitions/ContactDescription'
+
+  NotificationType:
+    type: string
+    enum:
+      - push
+      - email
+      - sms
+      - phone
+    example: email
+
+  NotificationDescription:
+    type: string
+    enum:
+      - Send a push notification to all my devices
+      - Send an email to an email address
+      - Send an SMS to a phone number
+      - Make a phone call to a phone number
+
+  NotificationObject:
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/NotificationType'
+      description:
+        $ref: '#/definitions/NotificationDescription'
+
+  TimeoutType:
+    type: integer
+    enum:
+      - 1
+      - 5
+      - 10
+      - 15
+      - 20
+      - 25
+      - 30
+      - 45
+      - 60
+
+  TimeoutDescription:
+    type: string
+    enum:
+      - If still unacked after 1 minute
+      - If still unacked after 5 minute
+      - If still unacked after 10 minute
+      - If still unacked after 15 minute
+      - If still unacked after 20 minute
+      - If still unacked after 25 minute
+      - If still unacked after 30 minute
+      - If still unacked after 45 minute
+      - If still unacked after 60 minute
+
+  TimeoutObject:
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/TimeoutType'
+      description:
+        $ref: '#/definitions/TimeoutDescription'
+
+  MaintenanceModeTarget:
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - 'RoutingKeys'
+      names:
+        type: array
+        items:
+          type: string
+        description: Routing keys that maintenance mode state covers. An empty list indicates global maintenance mode
+
+  ActiveMaintenanceMode:
+    type: object
+    properties:
+      instanceId:
+        type: string
+        description: external friendly unique id for maintenance mode
+      startedBy:
+        type: string
+        description: username of the user that started maintenance mode
+      startedAt:
+        type: number
+        description: millis from epoch marking the start time
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/MaintenanceModeTarget'
+      isGlobal:
+        type: boolean
+        description: whether this instance is a global maintenance mode or for specific routing keys
+
+
+  MaintenanceModeState:
+    type: object
+    properties:
+      companyId:
+        type: string
+      activeInstances:
+        type: array
+        items:
+          $ref: '#/definitions/ActiveMaintenanceMode'
+
+  Notes:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The unique name of your note
+      displayName:
+        type: string
+        description: The name that will typically be displayed when viewing each note.
+          This plus the name field can often be used as a key/value pair themselves.
+      json_value:
+        type: object
+        description: A valid JSON object of arbitrary key value pairs. This is the k/v store
+          of notes data you'll want to attach to an incident.
+          Maximum size = 16 MB

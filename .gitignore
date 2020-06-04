@@ -1,3 +1,11 @@
+###
+###
+### AUTO GENERATED www.gitignore.io
+###
+### FOR CUSTOM IGNORE RULES
+### PLEASE SCROLL TO THE BOTTOM
+###
+###
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,windows,osx,vim,sublimetext,visualstudiocode,go,intellij+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=linux,windows,osx,vim,sublimetext,visualstudiocode,go,intellij+all
@@ -234,3 +242,20 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,windows,osx,vim,sublimetext,visualstudiocode,go,intellij+all
+
+
+
+###
+###
+###
+###
+###
+### CUSTOM IGNORE RULES GO HERE
+###
+###
+###
+###
+###
+
+pkg/api/*/
+bin/

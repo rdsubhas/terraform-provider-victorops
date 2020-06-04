@@ -1,7 +1,7 @@
 package main
 
 import (
-	"terraform-provider-victorops/victorops"
+	"terraform-provider-victorops/pkg/provider"
 
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
@@ -10,7 +10,7 @@ import (
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() terraform.ResourceProvider {
-			return victorops.Provider()
+			return provider.Provider()
 		},
 	})
 }
