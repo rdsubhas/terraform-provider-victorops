@@ -19,13 +19,14 @@ func resourceTeam() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
 }
 
 func configureVictoropsTeam(d *schema.ResourceData, t models.TeamDetail) {
-	d.SetId(t.Name)
+	d.SetId(t.Slug)
 	d.Set("name", t.Name)
 	d.Set("slug", t.Slug)
 	d.Set("version", t.Version)
@@ -36,6 +37,9 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	params := &operations.PostAPIPublicV1TeamParams{
 		Context: meta.StopContext,
+		Body: &models.AddTeamPayload{
+			Name: strPointer(d.Get("name").(string)),
+		},
 	}
 	res, err := meta.Client.Operations.PostAPIPublicV1Team(params)
 	if err != nil {
@@ -44,7 +48,7 @@ func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 		return errors.New("API Error")
 	}
 	configureVictoropsTeam(d, res.Payload.TeamDetail)
-	return resourceTeamRead(d, m)
+	return nil
 }
 
 func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
@@ -64,7 +68,7 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTeamUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceTeamRead(d, m)
+	return errors.New("Not supported")
 }
 
 func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {

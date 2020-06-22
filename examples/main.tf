@@ -12,5 +12,5 @@ provider "victorops" {
 }
 
 resource "victorops_team" "team_1" {
-  name = "test-team"
+  name = "terraform-test-team"
 }

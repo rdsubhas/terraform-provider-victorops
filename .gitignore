@@ -259,3 +259,5 @@ $RECYCLE.BIN/
 
 pkg/api/*/
 bin/
+examples/.terraform/
+examples/*.tfstate*

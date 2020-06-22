@@ -9,3 +9,6 @@ init:
 
 test: init
 	terraform plan
+
+clean:
+	rm -Rf .terraform *.tfstate*
