@@ -12,10 +12,13 @@ generate:
 		--name=victorops \
 		--spec=pkg/api/victorops-api-v1.yaml \
 		--target=pkg/api \
-		--with-expand \
+		--with-flatten=full \
 		--skip-validation \
 		--skip-tag-packages \
-		--tags="Teams,Escalation Policies,Routing Keys"
+		--tags="Teams" \
+		--tags="Escalation Policies" \
+		--tags="Routing Keys" \
+		--tags="Maintenance Mode"
 
 build:
 	rm -Rf bin

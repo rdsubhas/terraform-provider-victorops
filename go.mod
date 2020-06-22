@@ -11,5 +11,6 @@ require (
 	github.com/go-swagger/go-swagger v0.23.0
 	github.com/hashicorp/terraform-plugin-sdk v1.13.1
 	github.com/mitchellh/gox v1.0.1
+	github.com/pkg/errors v0.9.1
 	golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 )
