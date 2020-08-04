@@ -16,6 +16,7 @@ generate:
 		--skip-validation \
 		--skip-tag-packages \
 		--tags="Teams" \
+		--tags="Users" \
 		--tags="Escalation Policies" \
 		--tags="Routing Keys" \
 		--tags="Maintenance Mode"

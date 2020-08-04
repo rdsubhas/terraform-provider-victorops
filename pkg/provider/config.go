@@ -35,7 +35,3 @@ func (c *Config) NewClient() (*client.Victorops, error) {
 	client := client.New(transport, nil)
 	return client, nil
 }
-
-func strPointer(x string) *string {
-	return &x
-}

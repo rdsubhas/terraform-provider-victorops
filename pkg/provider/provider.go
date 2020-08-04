@@ -33,6 +33,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"victorops_team": resourceTeam(),
+			"victorops_user": resourceUser(),
 		},
 	}
 	p.ConfigureFunc = providerConfigure(p)

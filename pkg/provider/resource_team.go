@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"fmt"
 	"terraform-provider-victorops/pkg/api/client/operations"
 	"terraform-provider-victorops/pkg/api/models"
 
@@ -19,13 +20,12 @@ func resourceTeam() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 		},
 	}
 }
 
-func configureVictoropsTeam(d *schema.ResourceData, t models.TeamDetail) {
+func resourceTeamConfigure(d *schema.ResourceData, t models.TeamDetail) {
 	d.SetId(t.Slug)
 	d.Set("name", t.Name)
 	d.Set("slug", t.Slug)
@@ -33,21 +33,25 @@ func configureVictoropsTeam(d *schema.ResourceData, t models.TeamDetail) {
 	d.Set("self_url", t.SelfURL)
 }
 
+func resourceTeamToString(d *schema.ResourceData) string {
+	return fmt.Sprintf("victorops_team: %s", d.Get("name"))
+}
+
 func resourceTeamCreate(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	params := &operations.PostAPIPublicV1TeamParams{
 		Context: meta.StopContext,
 		Body: &models.AddTeamPayload{
-			Name: strPointer(d.Get("name").(string)),
+			Name: &[]string{d.Get("name").(string)}[0],
 		},
 	}
 	res, err := meta.Client.Operations.PostAPIPublicV1Team(params)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Error creating resource %s: %v", resourceTeamToString(d), res)
 	} else if res == nil || res.Payload == nil {
-		return errors.New("API Error")
+		return errors.Errorf("Unknown API response creating resource %s", resourceTeamToString(d))
 	}
-	configureVictoropsTeam(d, res.Payload.TeamDetail)
+	resourceTeamConfigure(d, res.Payload.TeamDetail)
 	return nil
 }
 
@@ -55,15 +59,15 @@ func resourceTeamRead(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	params := &operations.GetAPIPublicV1TeamTeamParams{
 		Context: meta.StopContext,
-		Team:    strPointer(d.Id()),
+		Team:    &[]string{d.Id()}[0],
 	}
 	res, err := meta.Client.Operations.GetAPIPublicV1TeamTeam(params)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Error updating resource %s: %v", resourceTeamToString(d), res)
 	} else if res == nil || res.Payload == nil {
-		return errors.New("API Error")
+		return errors.Errorf("Unknown API response reading resource %s", resourceTeamToString(d))
 	}
-	configureVictoropsTeam(d, res.Payload.TeamDetail)
+	resourceTeamConfigure(d, res.Payload.TeamDetail)
 	return nil
 }
 
@@ -75,13 +79,13 @@ func resourceTeamDelete(d *schema.ResourceData, m interface{}) error {
 	meta := m.(*Meta)
 	params := &operations.DeleteAPIPublicV1TeamTeamParams{
 		Context: meta.StopContext,
-		Team:    strPointer(d.Id()),
+		Team:    &[]string{d.Id()}[0],
 	}
 	res, err := meta.Client.Operations.DeleteAPIPublicV1TeamTeam(params)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Error deleting resource %s: %v", resourceTeamToString(d), res)
 	} else if res == nil {
-		return errors.New("API Error")
+		return errors.Errorf("Unknown API response deleting resource %s", resourceTeamToString(d))
 	}
 	return nil
 }
